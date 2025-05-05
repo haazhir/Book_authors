@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authors</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .author-item {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .author-actions {
+            margin-top: 5px;
+        }
+        .author-actions button {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Authors</h1>
+        <div class="author-list" id="authorList"></div>
+    </div>
+
+    <script>
+        fetch('api/authors.php')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('authorList');
+                console.log('Fetched authors:', data);
+                data.forEach(author => {
+                    console.log('Rendering author:', author);
+                    const item = document.createElement('div');
+                    item.classList.add('author-item');
+                    item.innerHTML = `
+                        <div class="author-content">
+                            <p class="author-name">ID ${author.id}: ${author.name}</p>
+                            <p>Bio: ${author.bio}</p>
+                            <div class="author-actions">
+                                <button class="edit-author" data-id="${author.id}">Edit</button>
+                                <button class="delete-author" data-id="${author.id}">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+
+                document.querySelectorAll('.edit-author').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.getAttribute('data-id');
+                        console.log('Edit button clicked for ID:', id);
+                        if (id) {
+                            window.location.href = `edit_author.html?id=${id}`;
+                        } else {
+                            alert('Error: Missing author ID.');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.delete-author').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.getAttribute('data-id');
+                        console.log('Delete button clicked for ID:', id);
+                        if (id) {
+                            if (confirm('Are you sure you want to delete this author?')) {
+                                fetch(`api/authors.php?id=${id}`, { method: 'DELETE' })
+                                    .then(response => response.json())
+                                    .then(() => {
+                                        alert('Author deleted!');
+                                        location.reload();
+                                    })
+                                    .catch(() => alert('Failed to delete author.'));
+                            }
+                        } else {
+                            alert('Error: Missing author ID.');
+                        }
+                    });
+                });
+            })
+            .catch(() => alert('Failed to load authors list.'));
+    </script>
+</body>
+</html>

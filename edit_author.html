@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Author</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Edit Author</h1>
+        <form id="editAuthorForm">
+            <input type="text" id="name" placeholder="Name" required><br>
+            <textarea id="bio" placeholder="Bio" required></textarea><br>
+            <button type="submit">Update Author</button>
+        </form>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        fetch(`api/authors.php?id=${id}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('name').value = data.name;
+                document.getElementById('bio').value = data.bio;
+            });
+
+        document.getElementById('editAuthorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch(`api/authors.php?id=${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('name').value,
+                    bio: document.getElementById('bio').value
+                })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert('Author updated!');
+                window.location.href = 'authors.html';
+            });
+        });
+    </script>
+</body>
+</html>

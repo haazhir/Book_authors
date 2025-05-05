@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Book</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Edit Book</h1>
+        <form id="editBookForm">
+            <input type="text" id="title" placeholder="Title" required><br>
+            <select id="author" required></select><br>
+            <input type="number" id="year" placeholder="Publication Year" required><br>
+            <button type="submit">Update Book</button>
+        </form>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+
+        fetch('api/authors.php')
+            .then(response => response.json())
+            .then(authors => {
+                const select = document.getElementById('author');
+                authors.forEach(author => {
+                    const option = document.createElement('option');
+                    option.value = author.id;
+                    option.textContent = author.name;
+                    select.appendChild(option);
+                });
+
+                fetch(`api/books.php?id=${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('title').value = data.title;
+                        document.getElementById('author').value = data.author_id;
+                        document.getElementById('year').value = data.publication_year;
+                    });
+            });
+
+        document.getElementById('editBookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch(`api/books.php?id=${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: document.getElementById('title').value,
+                    author_id: document.getElementById('author').value,
+                    publication_year: document.getElementById('year').value
+                })
+            })
+            .then(response => response.json().then(data => ({
+                status: response.status,
+                body: data
+            })))
+            .then(res => {
+                if (res.status === 200) {
+                    alert('Book updated!');
+                    window.location.href = 'books.html';
+                } else {
+                    alert('Error: ' + (res.body.error || 'Unknown error'));
+                }
+            })
+            .catch(() => alert('Network or server error!'));
+        });
+    </script>
+</body>
+</html>

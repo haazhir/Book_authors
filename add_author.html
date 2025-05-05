@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Author</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Add Author</h1>
+        <form id="authorForm">
+            <input type="text" id="name" placeholder="Name" required><br>
+            <textarea id="bio" placeholder="Bio" required></textarea><br>
+            <button type="submit">Add Author</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('authorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('api/authors.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('name').value,
+                    bio: document.getElementById('bio').value
+                })
+            })
+            .then(response => response.json().then(data => ({
+                status: response.status,
+                body: data
+            })))
+            .then(res => {
+                if (res.status === 200 || res.status === 201) {
+                    alert('Author added!');
+                    window.location.href = 'authors.html';
+                } else {
+                    alert('Error: ' + (res.body.error || 'Unknown error'));
+                }
+            })
+            .catch(() => alert('Network or server error!'));
+        });
+    </script>
+</body>
+</html>

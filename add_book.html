@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Book</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Add Book</h1>
+        <form id="bookForm">
+            <input type="text" id="title" placeholder="Title" required><br>
+            <select id="author" required></select><br>
+            <input type="number" id="year" placeholder="Publication Year" required><br>
+            <button type="submit">Add Book</button>
+        </form>
+    </div>
+
+    <script>
+        fetch('api/authors.php')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('author');
+                data.forEach(author => {
+                    const option = document.createElement('option');
+                    option.value = author.id;
+                    option.textContent = author.name;
+                    select.appendChild(option);
+                });
+            });
+
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('api/books.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: document.getElementById('title').value,
+                    author_id: document.getElementById('author').value,
+                    publication_year: document.getElementById('year').value
+                })
+            })
+            .then(response => response.json().then(data => ({
+                status: response.status,
+                body: data
+            })))
+            .then(res => {
+                if (res.status === 200 || res.status === 201) {
+                    alert('Book added!');
+                    window.location.href = 'books.html';
+                } else {
+                    alert('Error: ' + (res.body.error || 'Unknown error'));
+                }
+            })
+            .catch(() => alert('Network or server error!'));
+        });
+    </script>
+</body>
+</html>

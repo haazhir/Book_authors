@@ -1,0 +1,626 @@
+{
+	"info": {
+		"_postman_id": "9c8668bf-5c0a-45c5-86c3-fb16fa0d8f5c",
+		"name": "Library API tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40858111"
+	},
+	"item": [
+		{
+			"name": "Authors",
+			"item": [
+				{
+					"name": "Get all authors",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Authors array strict multi-check\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    let nameRegex = /^[A-Za-z\\s.'-]+( [IVXLCDM]+)?$/;\r",
+									"    let bioRegex = /^[A-Za-z0-9\\s.,!?':;()-]+$/;\r",
+									"    let errors = [];\r",
+									"\r",
+									"    res.forEach((author, idx) => {\r",
+									"        if (!author.hasOwnProperty('id') || typeof author.id !== 'number') {\r",
+									"            errors.push(`Author at index ${idx} has invalid or missing 'id'`);\r",
+									"        }\r",
+									"\r",
+									"        if (!author.hasOwnProperty('name') || typeof author.name !== 'string' || author.name.trim() === '') {\r",
+									"            errors.push(`Author at index ${idx} has invalid or empty 'name'`);\r",
+									"        } else if (!nameRegex.test(author.name)) {\r",
+									"            errors.push(`Author at index ${idx} has invalid name pattern: \"${author.name}\"`);\r",
+									"        }\r",
+									"\r",
+									"        if (!author.hasOwnProperty('bio') || typeof author.bio !== 'string') {\r",
+									"            errors.push(`Author at index ${idx} has invalid or missing 'bio'`);\r",
+									"        } else if (!bioRegex.test(author.bio)) {\r",
+									"            errors.push(`Author at index ${idx} has invalid bio pattern: \"${author.bio}\"`);\r",
+									"        }\r",
+									"    });\r",
+									"\r",
+									"    if (errors.length > 0) {\r",
+									"        console.error(\"Validation errors:\\n\" + errors.join('\\n'));\r",
+									"        pm.expect.fail(\"Authors data failed validation. Check console for details.\");\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/authors.php",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"authors.php"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "author by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Single author strict check\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    let author = pm.response.json();\r",
+									"\r",
+									"    let nameRegex = /^[A-Za-z\\s.'-]+( [IVXLCDM]+)?$/;\r",
+									"    let bioRegex = /^[A-Za-z0-9\\s.,!?':;()-]+$/;\r",
+									"    let errors = [];\r",
+									"\r",
+									"    if (!author.hasOwnProperty('id') || typeof author.id !== 'number') {\r",
+									"        errors.push(`Author has invalid or missing 'id'`);\r",
+									"    }\r",
+									"\r",
+									"    if (!author.hasOwnProperty('name') || typeof author.name !== 'string' || author.name.trim() === '') {\r",
+									"        errors.push(`Author has invalid or empty 'name'`);\r",
+									"    } else if (!nameRegex.test(author.name)) {\r",
+									"        errors.push(`Author has invalid name pattern: \"${author.name}\"`);\r",
+									"    }\r",
+									"\r",
+									"    if (!author.hasOwnProperty('bio') || typeof author.bio !== 'string') {\r",
+									"        errors.push(`Author has invalid or missing 'bio'`);\r",
+									"    } else if (!bioRegex.test(author.bio)) {\r",
+									"        errors.push(`Author has invalid bio pattern: \"${author.bio}\"`);\r",
+									"    }\r",
+									"\r",
+									"    if (errors.length > 0) {\r",
+									"        console.error(\"Validation errors:\\n\" + errors.join('\\n'));\r",
+									"        pm.expect.fail(\"Author data failed validation. Check console for details.\");\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/authors.php?id={{author_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"authors.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{author_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create author",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST author strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 201) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"\r",
+									"        let sentData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};\r",
+									"        let nameRegex = /^[A-Za-z\\s.'-]+( [IVXLCDM]+)?$/;\r",
+									"        let bioRegex = /^[A-Za-z0-9\\s.,!?':;()-]+$/;\r",
+									"\r",
+									"        pm.expect(nameRegex.test(sentData.name), `Backend accepted invalid name: \"${sentData.name}\"`).to.be.true;\r",
+									"        pm.expect(bioRegex.test(sentData.bio), `Backend accepted invalid bio: \"${sentData.bio}\"`).to.be.true;\r",
+									"    } else {\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400, 422]);\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"{{author_name}}\", \"bio\": \"{{author_bio}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/authors.php",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"authors.php"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update author by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"PUT author strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 200) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"\r",
+									"        let sentData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};\r",
+									"        let nameRegex = /^[A-Za-z\\s.'-]+( [IVXLCDM]+)?$/;\r",
+									"        let bioRegex = /^[A-Za-z0-9\\s.,!?':;()-]+$/;\r",
+									"\r",
+									"        pm.expect(nameRegex.test(sentData.name), `Backend accepted invalid name: \"${sentData.name}\"`).to.be.true;\r",
+									"        pm.expect(bioRegex.test(sentData.bio), `Backend accepted invalid bio: \"${sentData.bio}\"`).to.be.true;\r",
+									"    } else {\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400, 404, 422]);\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"{{book_title}}\", \"bio\": \"{{author_bio}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/authors.php?id={{author_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"authors.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{author_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delet author by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DELETE author strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 200) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"    } else if (pm.response.code === 404) {\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    } else {\r",
+									"        pm.expect.fail(`Unexpected response code: ${pm.response.code}`);\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/authors.php?id={{author_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"authors.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{author_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Books",
+			"item": [
+				{
+					"name": "get all books",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Books array strict multi-check\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    let titleRegex = /^[A-Za-z0-9\\s.,!?':-]+$/;\r",
+									"    let errors = [];\r",
+									"\r",
+									"    res.forEach((book, idx) => {\r",
+									"        if (!book.hasOwnProperty('id') || typeof book.id !== 'number') {\r",
+									"            errors.push(`Book at index ${idx} has invalid or missing 'id'`);\r",
+									"        }\r",
+									"\r",
+									"        if (!book.hasOwnProperty('title') || typeof book.title !== 'string' || book.title.trim() === '') {\r",
+									"            errors.push(`Book at index ${idx} has invalid or empty 'title'`);\r",
+									"        } else if (!titleRegex.test(book.title)) {\r",
+									"            errors.push(`Book at index ${idx} has invalid title pattern: \"${book.title}\"`);\r",
+									"        }\r",
+									"\r",
+									"        if (!book.hasOwnProperty('author_id') || typeof book.author_id !== 'number') {\r",
+									"            errors.push(`Book at index ${idx} has invalid or missing 'author_id'`);\r",
+									"        }\r",
+									"\r",
+									"        if (!book.hasOwnProperty('publication_year') || typeof book.publication_year !== 'number') {\r",
+									"            errors.push(`Book at index ${idx} has invalid or missing 'publication_year'`);\r",
+									"        }\r",
+									"    });\r",
+									"\r",
+									"    if (errors.length > 0) {\r",
+									"        console.error(\"Validation errors:\\n\" + errors.join('\\n'));\r",
+									"        pm.expect.fail(\"Books data failed validation. Check console for details.\");\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/books.php",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"books.php"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "book by id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Single book strict check\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    let book = pm.response.json();\r",
+									"\r",
+									"    let titleRegex = /^[A-Za-z0-9\\s.,!?':-]+$/;\r",
+									"    let errors = [];\r",
+									"\r",
+									"    if (!book.hasOwnProperty('id') || typeof book.id !== 'number') {\r",
+									"        errors.push(`Book has invalid or missing 'id'`);\r",
+									"    }\r",
+									"\r",
+									"    if (!book.hasOwnProperty('title') || typeof book.title !== 'string' || book.title.trim() === '') {\r",
+									"        errors.push(`Book has invalid or empty 'title'`);\r",
+									"    } else if (!titleRegex.test(book.title)) {\r",
+									"        errors.push(`Book has invalid title pattern: \"${book.title}\"`);\r",
+									"    }\r",
+									"\r",
+									"    if (!book.hasOwnProperty('author_id') || typeof book.author_id !== 'number') {\r",
+									"        errors.push(`Book has invalid or missing 'author_id'`);\r",
+									"    }\r",
+									"\r",
+									"    if (!book.hasOwnProperty('publication_year') || typeof book.publication_year !== 'number') {\r",
+									"        errors.push(`Book has invalid or missing 'publication_year'`);\r",
+									"    }\r",
+									"\r",
+									"    if (errors.length > 0) {\r",
+									"        console.error(\"Validation errors:\\n\" + errors.join('\\n'));\r",
+									"        pm.expect.fail(\"Book data failed validation. Check console for details.\");\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/books.php?id={{book_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"books.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{book_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"POST book strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 201) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"\r",
+									"        let sentData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};\r",
+									"        let titleRegex = /^[A-Za-z0-9\\s.,!?':-]+$/;\r",
+									"\r",
+									"        pm.expect(titleRegex.test(sentData.title), `Backend accepted invalid title: \"${sentData.title}\"`).to.be.true;\r",
+									"        pm.expect(typeof sentData.author_id === 'number', `Backend accepted invalid author_id: \"${sentData.author_id}\"`).to.be.true;\r",
+									"        pm.expect(typeof sentData.publication_year === 'number', `Backend accepted invalid publication_year: \"${sentData.publication_year}\"`).to.be.true;\r",
+									"    } else {\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400, 422]);\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{book_title}}\",\r\n    \"author_id\": 1,\r\n    \"publication_year\": {{publication_year}}\r\n    }\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books.php",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"books.php"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"PUT book strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 200) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"\r",
+									"        let sentData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};\r",
+									"        let titleRegex = /^[A-Za-z0-9\\s.,!?':-]+$/;\r",
+									"\r",
+									"        pm.expect(titleRegex.test(sentData.title), `Backend accepted invalid title: \"${sentData.title}\"`).to.be.true;\r",
+									"        pm.expect(typeof sentData.author_id === 'number', `Backend accepted invalid author_id: \"${sentData.author_id}\"`).to.be.true;\r",
+									"        pm.expect(typeof sentData.publication_year === 'number', `Backend accepted invalid publication_year: \"${sentData.publication_year}\"`).to.be.true;\r",
+									"    } else {\r",
+									"        pm.expect(pm.response.code).to.be.oneOf([400, 404, 422]);\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{book_title}}\",\r\n    \"author_id\": 1,\r\n    \"publication_year\": {{publication_year}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books.php?id={{book_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"books.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{book_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DELETE book strict backend check\", function () {\r",
+									"    let res = pm.response.json();\r",
+									"\r",
+									"    if (pm.response.code === 200) {\r",
+									"        pm.expect(res.message).to.exist;\r",
+									"    } else if (pm.response.code === 404) {\r",
+									"        pm.expect(res.error || res.errors).to.exist;\r",
+									"    } else {\r",
+									"        pm.expect.fail(`Unexpected response code: ${pm.response.code}`);\r",
+									"    }\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/books.php?id={{book_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"books.php"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{book_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

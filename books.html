@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Books</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="authors.html">View Authors</a>
+        <a href="add_author.html">Add Author</a>
+        <a href="books.html">View Books</a>
+        <a href="add_book.html">Add Book</a>
+    </nav>
+
+    <div class="container">
+        <h1>Books</h1>
+        <div class="book-list" id="bookList"></div>
+    </div>
+
+    <script>
+        fetch('api/books.php')
+            .then(response => response.json())
+            .then(data => {
+                const list = document.getElementById('bookList');
+                data.forEach(book => {
+                    const item = document.createElement('div');
+                    item.classList.add('book-item');
+                    item.innerHTML = `
+                        <p class="book-title">${book.title}</p>
+                        <p>Author: ${book.author_name}</p>
+                        <p>Year: ${book.publication_year}</p>
+                        <button class="edit-book" data-id="${book.id}">Edit</button>
+                        <button class="delete-book" data-id="${book.id}">Delete</button>
+                    `;
+                    list.appendChild(item);
+                });
+
+                document.querySelectorAll('.edit-book').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.getAttribute('data-id');
+                        window.location.href = `edit_book.html?id=${id}`;
+                    });
+                });
+
+                document.querySelectorAll('.delete-book').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const id = button.getAttribute('data-id');
+                        if (confirm('Are you sure you want to delete this book?')) {
+                            fetch(`api/books.php?id=${id}`, { method: 'DELETE' })
+                                .then(response => response.json())
+                                .then(() => {
+                                    alert('Book deleted!');
+                                    location.reload();
+                                });
+                        }
+                    });
+                });
+            });
+    </script>
+</body>
+</html>
