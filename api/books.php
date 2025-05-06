@@ -52,6 +52,11 @@ if ($method === 'POST') {
         exit;
     }
 
+    if (!preg_match("/^[A-Za-z0-9\s.,!?':;()-]+$/", $data['title'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid title format']);
+        exit;
+    }
     $title = $conn->real_escape_string($data['title']);
     $author_id = intval($data['author_id']);
     $publication_year = intval($data['publication_year']);
@@ -85,6 +90,12 @@ if ($method === 'PUT') {
             !validate_int($data['publication_year'], 0, intval(date("Y")))) {
             http_response_code(400);
             echo json_encode(['error' => 'Invalid title, author ID, or publication year']);
+            exit;
+        }
+
+        if (!preg_match("/^[A-Za-z0-9\s.,!?':;()-]+$/", $data['title'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid title format']);
             exit;
         }
 

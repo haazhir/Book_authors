@@ -42,6 +42,18 @@ if ($method === 'POST') {
         exit;
     }
 
+    if (!preg_match("/^[A-Za-z\s.'-]+( [IVXLCDM]+)?$/", $data['name'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid name format']);
+        exit;
+    }
+
+    if (!preg_match("/^[A-Za-z0-9\s.,!?':;()-]+$/", $data['bio'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid bio format']);
+        exit;
+    }
+
     $name = $conn->real_escape_string($data['name']);
     $bio = $conn->real_escape_string($data['bio']);
 
@@ -72,6 +84,18 @@ if ($method === 'PUT') {
         if (!validate_string($data['name'], 255) || !validate_string($data['bio'], 1000)) {
             http_response_code(400);
             echo json_encode(['error' => 'Name and bio are required and must meet length limits']);
+            exit;
+        }
+
+        if (!preg_match("/^[A-Za-z\s.'-]+( [IVXLCDM]+)?$/", $data['name'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid name format']);
+            exit;
+        }
+
+        if (!preg_match("/^[A-Za-z0-9\s.,!?':;()-]+$/", $data['bio'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid bio format']);
             exit;
         }
 
